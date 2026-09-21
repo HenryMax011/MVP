@@ -1,0 +1,109 @@
+.auth-box {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 32px 16px 48px;
+  background:
+    radial-gradient(1200px 500px at 50% -10%, #1a4a3a 0%, transparent 55%),
+    #07140f;
+}
+
+.auth-box__shell {
+  width: min(420px, calc(100vw - 32px));
+}
+
+.auth-box__brand {
+  margin: 0 0 22px;
+  display: flex;
+  justify-content: center;
+}
+
+.auth-box__logo {
+  height: 32px;
+  width: 32px;
+  border-radius: 9px;
+}
+
+.auth-box__mvp {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 6px;
+  background: #b8f3d4;
+  color: #065f46;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+}
+
+.auth-box__card {
+  width: 100%;
+  padding: 36px 32px 28px;
+  border-radius: 28px;
+  background: #f6f1e8;
+  color: #1c241f;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+}
+
+.auth-box__step {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #0c8a5d;
+}
+
+.auth-box__card h1 {
+  margin: 0;
+  font-size: 1.7rem;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+}
+
+.auth-box__card > p {
+  margin: 8px 0 24px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #5b6b63;
+}
+
+.auth-box__card input:not([type="checkbox"]):not([type="hidden"]) {
+  height: 44px;
+  border: 0;
+  border-bottom: 1px solid #d7cfc2;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.auth-box__card input:not([type="checkbox"]):not([type="hidden"]):focus {
+  border-bottom-color: #14362c;
+  box-shadow: none;
+  outline: none;
+  --tw-ring-shadow: 0 0 #0000;
+}
+
+.auth-box__card button[type="submit"] {
+  margin-top: 8px;
+  height: 44px;
+  border-radius: 999px;
+  background: #14362c;
+  color: #f6f1e8;
+  box-shadow: none;
+}
+
+.auth-box__footer {
+  margin-top: 16px;
+  font-size: 13px;
+  color: #5b6b63;
+}
+
+.auth-box__footer a {
+  color: #c4a36a;
+  font-weight: 700;
+  text-decoration: none;
+}
