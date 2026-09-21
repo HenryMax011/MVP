@@ -14,11 +14,10 @@ export default async function GruposPage() {
     orderBy: { joinedAt: "desc" },
   });
 
-  const cards = [];
   const nets = await Promise.all(memberships.map((m) => getGroupBalances(m.groupId)));
-  memberships.forEach((m, i) => {
+  const cards = memberships.map((m, i) => {
     const mine = nets[i]?.find((b) => b.userId === session.userId);
-    cards.push({ ...m, net: mine?.net ?? 0 });
+    return { ...m, net: mine?.net ?? 0 };
   });
 
   return (
