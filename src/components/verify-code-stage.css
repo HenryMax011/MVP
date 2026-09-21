@@ -1,4 +1,7 @@
 .verify-stage {
+  font-synthesis: none;
+  text-shadow: none;
+  -webkit-text-stroke: 0;
   min-height: 100dvh;
   display: grid;
   place-items: center;

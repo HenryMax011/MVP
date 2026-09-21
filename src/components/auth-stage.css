@@ -14,6 +14,9 @@
     radial-gradient(1200px 500px at 50% -10%, #1a4a3a 0%, transparent 55%),
     #07140f;
   color: var(--auth-ink);
+  font-synthesis: none;
+  text-shadow: none;
+  -webkit-text-stroke: 0;
 }
 
 .auth-stage__shell {
@@ -185,14 +188,10 @@
   color: var(--auth-muted);
 }
 
-.auth-stage__switch button {
-  border: 0;
-  background: none;
+.auth-stage__switch a {
   color: var(--auth-gold);
   font-weight: 700;
-  cursor: pointer;
-  padding: 0;
-  font-size: 13px;
+  text-decoration: none;
 }
 
 .auth-stage__error {

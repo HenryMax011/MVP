@@ -40,6 +40,9 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  font-synthesis: none;
+  text-shadow: none;
+  -webkit-text-stroke: 0;
 }
 
 body {

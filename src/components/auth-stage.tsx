@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState } from "react";
 import Link from "next/link";
 import { Lock, User } from "lucide-react";
 import { loginAction, startSignupAction, type AuthState } from "@/actions/auth";
@@ -14,7 +14,7 @@ export function AuthStage({
   mode?: "login" | "signup";
   flash?: string | null;
 }) {
-  const [signup, setSignup] = useState(mode === "signup");
+  const signup = mode === "signup";
 
   return (
     <div className="auth-stage">
@@ -37,11 +37,7 @@ export function AuthStage({
             )}
           </aside>
           <div className="auth-stage__main">
-            {signup ? (
-              <SignupPanel onLogin={() => setSignup(false)} />
-            ) : (
-              <LoginPanel flash={flash} onSignup={() => setSignup(true)} />
-            )}
+            {signup ? <SignupPanel /> : <LoginPanel flash={flash} />}
           </div>
         </div>
       </div>
@@ -49,7 +45,7 @@ export function AuthStage({
   );
 }
 
-function LoginPanel({ flash, onSignup }: { flash?: string | null; onSignup: () => void }) {
+function LoginPanel({ flash }: { flash?: string | null }) {
   const [state, action, pending] = useActionState(loginAction, null as AuthState);
 
   return (
@@ -87,16 +83,13 @@ function LoginPanel({ flash, onSignup }: { flash?: string | null; onSignup: () =
         {pending ? "Entrando..." : "Entrar"}
       </button>
       <p className="auth-stage__switch">
-        Não tem conta?{" "}
-        <button type="button" onClick={onSignup}>
-          Criar conta
-        </button>
+        Não tem conta? <Link href="/cadastro">Criar conta</Link>
       </p>
     </form>
   );
 }
 
-function SignupPanel({ onLogin }: { onLogin: () => void }) {
+function SignupPanel() {
   const [state, action, pending] = useActionState(startSignupAction, null as AuthState);
 
   return (
@@ -112,10 +105,7 @@ function SignupPanel({ onLogin }: { onLogin: () => void }) {
         {pending ? "Continuando..." : "Continuar"}
       </button>
       <p className="auth-stage__switch">
-        Já tem conta?{" "}
-        <button type="button" onClick={onLogin}>
-          Entrar
-        </button>
+        Já tem conta? <Link href="/login">Entrar</Link>
       </p>
     </form>
   );
