@@ -3,7 +3,6 @@
   --auth-ink: #1c241f;
   --auth-muted: #7a6f62;
   --auth-green: #14362c;
-  --auth-green-2: #0d241d;
   --auth-gold: #c4a36a;
   min-height: 100dvh;
   display: flex;
@@ -27,30 +26,9 @@
   justify-content: center;
 }
 
-.auth-stage__logo {
-  height: 36px;
-  width: 36px;
-  border-radius: 10px;
-}
-
-.auth-stage__mvp {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 22px;
-  padding: 0 8px;
-  border-radius: 6px;
-  background: #b8f3d4;
-  color: #065f46;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  line-height: 1;
-}
-
 .auth-stage__card {
-  position: relative;
-  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   min-height: 520px;
   border-radius: 28px;
   overflow: hidden;
@@ -58,44 +36,56 @@
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
 }
 
-.auth-stage__form-wrap {
-  position: absolute;
-  top: 0;
-  height: 100%;
-  width: 50%;
+.auth-stage__aside {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 48px 42px;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.08) 0 1px, transparent 1.5px) 0 0 / 28px 28px,
+    linear-gradient(160deg, #1a4a3c 0%, #10291f 52%, #0c2119 100%);
+  color: #f4efe6;
+}
+
+.auth-stage__aside h2 {
+  margin: 0;
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+
+.auth-stage__aside p {
+  margin: 16px 0 0;
+  max-width: 280px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: rgba(244, 239, 230, 0.78);
+}
+
+.auth-stage__main {
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 36px 40px;
-  transition: transform 0.7s cubic-bezier(0.68, -0.15, 0.265, 1.15);
-}
-
-.auth-stage__form-wrap--login {
-  left: 0;
-  z-index: 2;
-}
-
-.auth-stage__form-wrap--signup {
-  left: 0;
-  opacity: 0;
-  z-index: 1;
-  pointer-events: none;
-}
-
-.auth-stage__card.is-signup .auth-stage__form-wrap--login {
-  transform: translateX(100%);
-}
-
-.auth-stage__card.is-signup .auth-stage__form-wrap--signup {
-  transform: translateX(100%);
-  opacity: 1;
-  z-index: 5;
-  pointer-events: auto;
+  background: var(--auth-cream);
 }
 
 .auth-stage__form {
   width: 100%;
   max-width: 320px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .auth-stage__heading {
@@ -139,21 +129,6 @@
   color: #8a8074;
 }
 
-.auth-stage__icon-btn {
-  position: absolute;
-  right: 0;
-  top: 6px;
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  border: 0;
-  background: transparent;
-  color: #8a8074;
-  cursor: pointer;
-  padding: 0;
-}
-
 .auth-stage__row {
   display: flex;
   align-items: center;
@@ -161,7 +136,6 @@
   gap: 12px;
   margin: 8px 0 22px;
   font-size: 13px;
-  white-space: nowrap;
 }
 
 .auth-stage__check {
@@ -169,7 +143,6 @@
   align-items: center;
   gap: 8px;
   color: var(--auth-ink);
-  cursor: default;
 }
 
 .auth-stage__check input {
@@ -210,7 +183,6 @@
   text-align: center;
   font-size: 13px;
   color: var(--auth-muted);
-  white-space: nowrap;
 }
 
 .auth-stage__switch button {
@@ -238,184 +210,21 @@
   font-size: 13px;
 }
 
-.auth-stage__overlay-wrap {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  width: 50%;
-  height: 100%;
-  overflow: hidden;
-  z-index: 10;
-  transition: transform 0.7s cubic-bezier(0.68, -0.15, 0.265, 1.15);
-}
-
-.auth-stage__card.is-signup .auth-stage__overlay-wrap {
-  transform: translateX(-100%);
-}
-
-.auth-stage__overlay {
-  position: relative;
-  left: -100%;
-  width: 200%;
-  height: 100%;
-  background:
-    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.08) 0 1px, transparent 1.5px) 0 0 / 28px 28px,
-    radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.07) 0 1.2px, transparent 1.8px) 8px 10px / 32px 32px,
-    linear-gradient(160deg, #1a4a3c 0%, #10291f 52%, #0c2119 100%);
-  color: #f4efe6;
-  transform: translateX(0);
-  transition: transform 0.7s cubic-bezier(0.68, -0.15, 0.265, 1.15);
-}
-
-.auth-stage__card.is-signup .auth-stage__overlay {
-  transform: translateX(50%);
-}
-
-.auth-stage__panel {
-  position: absolute;
-  top: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  width: 50%;
-  height: 100%;
-  padding: 48px 42px;
-  transition: transform 0.7s cubic-bezier(0.68, -0.15, 0.265, 1.15);
-}
-
-.auth-stage__panel--left {
-  left: 0;
-  transform: translateX(-18%);
-}
-
-.auth-stage__panel--right {
-  right: 0;
-  transform: translateX(0);
-}
-
-.auth-stage__card.is-signup .auth-stage__panel--left {
-  transform: translateX(0);
-}
-
-.auth-stage__card.is-signup .auth-stage__panel--right {
-  transform: translateX(18%);
-}
-
-.auth-stage__sparkles {
-  margin: 0 0 14px;
-  letter-spacing: 0.35em;
-  font-size: 11px;
-  color: rgba(244, 239, 230, 0.55);
-}
-
-.auth-stage__panel h2 {
-  margin: 0;
-  font-size: clamp(1.8rem, 3vw, 2.6rem);
-  font-weight: 600;
-  letter-spacing: -0.03em;
-  line-height: 1.15;
-}
-
-.auth-stage__panel p {
-  margin: 16px 0 0;
-  max-width: 280px;
-  font-size: 14px;
-  line-height: 1.55;
-  color: rgba(244, 239, 230, 0.78);
-}
-
 @media (max-width: 800px) {
   .auth-stage__shell {
     width: min(420px, calc(100vw - 32px));
   }
 
   .auth-stage__card {
+    grid-template-columns: 1fr;
     min-height: auto;
-    max-width: none;
-    display: flex;
-    flex-direction: column;
   }
 
-  .auth-stage__overlay-wrap {
-    position: relative;
-    left: 0;
-    width: 100%;
-    height: auto;
-    transform: none;
-    order: -1;
-  }
-
-  .auth-stage__form-wrap,
-  .auth-stage__form-wrap--signup,
-  .auth-stage__card.is-signup .auth-stage__form-wrap--login,
-  .auth-stage__card.is-signup .auth-stage__form-wrap--signup {
-    position: relative;
-    left: 0;
-    width: 100%;
-    transform: none;
-    padding: 36px 28px 32px;
-    opacity: 1;
-    pointer-events: auto;
-  }
-
-  .auth-stage__form-wrap--login {
-    display: flex;
-  }
-
-  .auth-stage__card.is-signup .auth-stage__form-wrap--login,
-  .auth-stage__card:not(.is-signup) .auth-stage__form-wrap--signup {
-    display: none;
-  }
-
-  .auth-stage__overlay-wrap {
-    position: relative;
-    left: 0;
-    width: 100%;
-    height: auto;
-    transform: none;
-  }
-
-  .auth-stage__card.is-signup .auth-stage__overlay-wrap {
-    transform: none;
-  }
-
-  .auth-stage__overlay {
-    left: 0;
-    width: 100%;
-    transform: none;
-    min-height: 160px;
-  }
-
-  .auth-stage__card.is-signup .auth-stage__overlay {
-    transform: none;
-  }
-
-  .auth-stage__panel {
-    position: relative;
-    width: 100%;
-    height: auto;
+  .auth-stage__aside {
     padding: 28px 28px 24px;
-    transform: none;
   }
 
-  .auth-stage__card.is-signup .auth-stage__panel--left,
-  .auth-stage__card.is-signup .auth-stage__panel--right,
-  .auth-stage__panel--left,
-  .auth-stage__panel--right {
-    transform: none;
-  }
-
-  .auth-stage__card:not(.is-signup) .auth-stage__panel--left,
-  .auth-stage__card.is-signup .auth-stage__panel--right {
-    display: none;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .auth-stage__form-wrap,
-  .auth-stage__overlay-wrap,
-  .auth-stage__overlay,
-  .auth-stage__panel {
-    transition: none;
+  .auth-stage__main {
+    padding: 36px 28px 32px;
   }
 }

@@ -22,26 +22,26 @@ export function AuthStage({
         <div className="auth-stage__title">
           <Logo tone="onDark" />
         </div>
-        <div className={`auth-stage__card${signup ? " is-signup" : ""}`}>
-          <div className="auth-stage__form-wrap auth-stage__form-wrap--login">
-            <LoginPanel flash={flash} onSignup={() => setSignup(true)} />
-          </div>
-          <div className="auth-stage__form-wrap auth-stage__form-wrap--signup">
-            <SignupPanel onLogin={() => setSignup(false)} />
-          </div>
-          <div className="auth-stage__overlay-wrap">
-            <div className="auth-stage__overlay">
-              <div className="auth-stage__panel auth-stage__panel--left">
-                <p className="auth-stage__sparkles">******</p>
+        <div className="auth-stage__card">
+          <aside className="auth-stage__aside">
+            {signup ? (
+              <>
                 <h2>Olá.</h2>
                 <p>Crie sua conta e comece a organizar o dinheiro em poucos minutos.</p>
-              </div>
-              <div className="auth-stage__panel auth-stage__panel--right">
-                <p className="auth-stage__sparkles">******</p>
+              </>
+            ) : (
+              <>
                 <h2>Bem-vindo de volta.</h2>
                 <p>Suas finanças, seus gráficos e seus planos — tudo no lugar em que você deixou.</p>
-              </div>
-            </div>
+              </>
+            )}
+          </aside>
+          <div className="auth-stage__main">
+            {signup ? (
+              <SignupPanel onLogin={() => setSignup(false)} />
+            ) : (
+              <LoginPanel flash={flash} onSignup={() => setSignup(true)} />
+            )}
           </div>
         </div>
       </div>
@@ -58,13 +58,7 @@ function LoginPanel({ flash, onSignup }: { flash?: string | null; onSignup: () =
       {flash && <p className="auth-stage__flash">{flash}</p>}
       <label className="auth-stage__field">
         <span className="sr-only">E-mail</span>
-        <input
-          name="email"
-          type="email"
-          autoComplete="username"
-          required
-          placeholder="E-mail"
-        />
+        <input name="email" type="email" autoComplete="username" required placeholder="E-mail" />
         <User className="auth-stage__icon" aria-hidden />
       </label>
       <label className="auth-stage__field">
