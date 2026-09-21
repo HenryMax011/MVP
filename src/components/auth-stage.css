@@ -75,8 +75,11 @@
 }
 
 .auth-stage__form {
+  display: flex;
+  flex-direction: column;
   width: 100%;
   max-width: 320px;
+  gap: 24px;
 }
 
 .sr-only {
@@ -92,24 +95,25 @@
 }
 
 .auth-stage__heading {
-  margin: 0 0 28px;
+  margin: 0;
   font-size: 2rem;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: -0.03em;
 }
 
 .auth-stage__field {
   position: relative;
-  margin-bottom: 22px;
+  margin: 0;
+  padding-bottom: 4px;
 }
 
 .auth-stage__field input {
   width: 100%;
-  height: 42px;
+  height: 44px;
   border: 0;
   border-bottom: 1px solid #d7cfc2;
   background: transparent;
-  padding: 0 36px 0 0;
+  padding: 0 36px 10px 0;
   font-size: 14px;
   color: var(--auth-ink);
   outline: none;
@@ -137,7 +141,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin: 8px 0 22px;
+  margin: 0;
   font-size: 13px;
 }
 
@@ -167,12 +171,13 @@
 .auth-stage__submit {
   width: 100%;
   height: 44px;
+  margin-top: 8px;
   border: 0;
   border-radius: 999px;
   background: var(--auth-green);
   color: #f6f1e8;
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
 }
 
@@ -182,7 +187,7 @@
 }
 
 .auth-stage__switch {
-  margin: 18px 0 0;
+  margin: 0;
   text-align: center;
   font-size: 13px;
   color: var(--auth-muted);
@@ -195,7 +200,7 @@
 }
 
 .auth-stage__error {
-  margin: 0 0 12px;
+  margin: 0;
   color: #b42318;
   font-size: 13px;
 }
