@@ -2,8 +2,6 @@ import { Resend } from "resend";
 import nodemailer from "nodemailer";
 import { mailAppUrl } from "@/lib/app-url";
 
-const RESEND_FROM = "MVP Finanças <onboarding@resend.dev>";
-
 function escapeHtml(value: string) {
   return value.replace(/[&<>"']/g, (char) => {
     if (char === "&") return "&amp;";
@@ -14,62 +12,54 @@ function escapeHtml(value: string) {
   });
 }
 
-function fromAddress(smtpUser: string) {
-  const raw = process.env.MAIL_FROM?.trim() || "";
-  const match = raw.match(/<([^>]+)>/);
-  const configured = (match?.[1] || raw).trim();
-  if (configured && configured.toLowerCase() === smtpUser.toLowerCase()) {
-    return { name: "MVP Finanças", address: smtpUser };
-  }
-  return { name: "MVP Finanças", address: smtpUser };
+function mailFrom() {
+  const from = process.env.MAIL_FROM?.trim();
+  if (from && !from.includes("@resend.dev")) return from;
+  return process.env.MAIL_FROM?.trim() || "MVP Finanças <onboarding@resend.dev>";
 }
 
 async function sendWithResend(to: string, subject: string, html: string, text: string) {
   const apiKey = process.env.RESEND_API_KEY?.trim();
   if (!apiKey) return false;
   const resend = new Resend(apiKey);
-  const from = process.env.MAIL_FROM?.includes("@resend.dev")
-    ? process.env.MAIL_FROM.trim()
-    : RESEND_FROM;
   const { error } = await resend.emails.send({
-    from,
+    from: mailFrom(),
     to,
     subject,
     html,
     text,
   });
-  if (error) {
-    throw new Error(`Falha ao enviar e-mail: ${error.message}`);
-  }
-  return true;
+  if (!error) return true;
+  if (/only send testing emails|verify a domain/i.test(error.message)) return false;
+  throw new Error(`Falha ao enviar e-mail: ${error.message}`);
 }
 
-async function sendEmail(to: string, subject: string, html: string, text: string) {
-  if (await sendWithResend(to, subject, html, text)) return;
-
+async function sendWithGmail(to: string, subject: string, html: string, text: string) {
   const user = process.env.SMTP_USER?.trim();
   const pass = process.env.SMTP_PASS?.replace(/\s/g, "");
   if (!user || !pass) {
-    throw new Error("Configure SMTP_USER e SMTP_PASS (senha de app do Gmail) no .env para enviar e-mails.");
+    throw new Error(
+      "Sem domínio no Resend, o app usa Gmail. Configure SMTP_USER e SMTP_PASS no .env.",
+    );
   }
-
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: { user, pass },
   });
+  await transporter.sendMail({
+    from: { name: "MVP Finanças", address: user },
+    replyTo: user,
+    to,
+    subject,
+    html,
+    text,
+  });
+}
 
+async function sendEmail(to: string, subject: string, html: string, text: string) {
+  if (await sendWithResend(to, subject, html, text)) return;
   try {
-    await transporter.sendMail({
-      from: fromAddress(user),
-      replyTo: user,
-      to,
-      subject,
-      html,
-      text,
-      headers: {
-        "X-Entity-Ref-ID": `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
-      },
-    });
+    await sendWithGmail(to, subject, html, text);
   } catch (error) {
     const detail = error instanceof Error ? error.message : "erro desconhecido";
     throw new Error(`Falha ao enviar e-mail: ${detail}`);
