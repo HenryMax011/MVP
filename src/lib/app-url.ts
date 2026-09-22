@@ -5,10 +5,20 @@ function stripSlash(url: string) {
 }
 
 function isLocalHost(value: string) {
-  return /^(https?:\/\/)?(localhost|127\.0\.0\.1)(:\d+)?$/i.test(value);
+  return /(localhost|127\.0\.0\.1)/i.test(value);
 }
 
-export async function appUrl() {
+function configuredPublicUrl() {
+  const publicUrl = process.env.PUBLIC_APP_URL ? stripSlash(process.env.PUBLIC_APP_URL) : "";
+  if (publicUrl && !isLocalHost(publicUrl)) return publicUrl;
+  const configured = process.env.APP_URL ? stripSlash(process.env.APP_URL) : "";
+  if (configured && !isLocalHost(configured)) return configured;
+  const vercelHost = process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL;
+  if (vercelHost) return `https://${vercelHost.replace(/^https?:\/\//, "")}`;
+  return "";
+}
+
+async function requestUrl() {
   try {
     const h = await headers();
     const host = (h.get("x-forwarded-host") || h.get("host") || "").split(",")[0]?.trim();
@@ -19,18 +29,22 @@ export async function appUrl() {
       return `${proto}://${host}`;
     }
   } catch {
-    // Fora de um request (script, cron): cai nos fallbacks abaixo.
+    // Fora de um request (script, cron).
   }
+  return "";
+}
 
-  const configured = process.env.APP_URL ? stripSlash(process.env.APP_URL) : "";
-  if (configured && !isLocalHost(configured)) {
-    return configured;
-  }
+export async function appUrl() {
+  const fromRequest = await requestUrl();
+  if (fromRequest) return fromRequest;
+  return configuredPublicUrl() || "http://localhost:3000";
+}
 
-  const vercelHost = process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL;
-  if (vercelHost) {
-    return `https://${vercelHost.replace(/^https?:\/\//, "")}`;
-  }
-
-  return configured || "http://localhost:3000";
+/** Link que vai no e-mail: HTTPS público. Localhost cai no spam do Gmail. */
+export async function mailAppUrl() {
+  const publicUrl = configuredPublicUrl();
+  if (publicUrl) return publicUrl;
+  const fromRequest = await requestUrl();
+  if (fromRequest && !isLocalHost(fromRequest)) return fromRequest;
+  return fromRequest || "http://localhost:3000";
 }

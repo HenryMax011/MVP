@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireSession } from "@/lib/auth";
 import { answerAssistant } from "@/lib/ai";
-import { pruneAssistantMessages } from "@/lib/assistant";
 import { prisma } from "@/lib/db";
 
 export async function POST(req: Request) {
@@ -16,8 +15,6 @@ export async function POST(req: Request) {
   if (!message) {
     return NextResponse.json({ error: "Mensagem vazia" }, { status: 400 });
   }
-
-  await pruneAssistantMessages(session.userId);
 
   let conversation = await prisma.conversation.findFirst({
     where: { userId: session.userId },

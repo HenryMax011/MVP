@@ -1,15 +1,10 @@
 import { requireSession } from "@/lib/auth";
-import { prisma } from "@/lib/db";
 import { Chat } from "@/components/chat";
-import { pruneAssistantMessages } from "@/lib/assistant";
+import { clearAssistantMessages } from "@/lib/assistant";
 
 export default async function IaPage() {
   const session = await requireSession();
-  await pruneAssistantMessages(session.userId);
-  const conversation = await prisma.conversation.findFirst({
-    where: { userId: session.userId },
-    include: { messages: { orderBy: { createdAt: "asc" }, take: 40 } },
-  });
+  await clearAssistantMessages(session.userId);
 
   return (
     <div className="grid gap-3">
@@ -19,13 +14,7 @@ export default async function IaPage() {
           Pergunte sobre seus gastos e o que ainda sobra no mês. As respostas são só suas.
         </p>
       </div>
-      <Chat
-        initial={(conversation?.messages ?? []).map((m) => ({
-          role: m.role as "user" | "assistant",
-          content: m.content,
-          createdAt: m.createdAt.toISOString(),
-        }))}
-      />
+      <Chat />
     </div>
   );
 }

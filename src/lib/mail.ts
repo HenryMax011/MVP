@@ -1,5 +1,25 @@
 import nodemailer from "nodemailer";
-import { appUrl } from "@/lib/app-url";
+import { mailAppUrl } from "@/lib/app-url";
+
+function escapeHtml(value: string) {
+  return value.replace(/[&<>"']/g, (char) => {
+    if (char === "&") return "&amp;";
+    if (char === "<") return "&lt;";
+    if (char === ">") return "&gt;";
+    if (char === '"') return "&quot;";
+    return "&#39;";
+  });
+}
+
+function fromAddress(smtpUser: string) {
+  const raw = process.env.MAIL_FROM?.trim() || "";
+  const match = raw.match(/<([^>]+)>/);
+  const configured = (match?.[1] || raw).trim();
+  if (configured && configured.toLowerCase() === smtpUser.toLowerCase()) {
+    return { name: "MVP Finanças", address: smtpUser };
+  }
+  return { name: "MVP Finanças", address: smtpUser };
+}
 
 async function sendEmail(to: string, subject: string, html: string, text: string) {
   if (process.env.RESEND_API_KEY) {
@@ -10,11 +30,12 @@ async function sendEmail(to: string, subject: string, html: string, text: string
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: process.env.MAIL_FROM || "Financias <noreply@resend.dev>",
+        from: process.env.MAIL_FROM || "MVP Finanças <noreply@resend.dev>",
         to,
         subject,
         html,
         text,
+        reply_to: process.env.SMTP_USER || undefined,
       }),
     });
     if (!response.ok) {
@@ -31,19 +52,21 @@ async function sendEmail(to: string, subject: string, html: string, text: string
   }
 
   const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || "smtp.gmail.com",
-    port: Number(process.env.SMTP_PORT || 587),
-    secure: false,
+    service: "gmail",
     auth: { user, pass },
   });
 
   try {
     await transporter.sendMail({
-      from: process.env.MAIL_FROM?.trim() || `Financias <${user}>`,
+      from: fromAddress(user),
+      replyTo: user,
       to,
       subject,
       html,
       text,
+      headers: {
+        "X-Entity-Ref-ID": `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
+      },
     });
   } catch (error) {
     const detail = error instanceof Error ? error.message : "erro desconhecido";
@@ -53,27 +76,18 @@ async function sendEmail(to: string, subject: string, html: string, text: string
 
 function layout(title: string, body: string) {
   return `
-  <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background:#eef6f2;margin:0;padding:0">
+  <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background:#f4f6f3;margin:0;padding:0">
     <tr>
-      <td align="center" style="padding:32px 16px">
-        <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="max-width:440px;background:#ffffff;border-radius:20px;overflow:hidden;border:1px solid #d7e8df">
+      <td align="center" style="padding:28px 16px">
+        <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="max-width:480px;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e2e8e0">
           <tr>
-            <td style="background:#0c8a5d;padding:18px 24px">
-              <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
-                <tr>
-                  <td style="font-family:Arial,Helvetica,sans-serif;font-size:18px;font-weight:700;color:#ffffff;letter-spacing:-0.3px">
-                    Financias
-                  </td>
-                  <td align="right">
-                    <span style="display:inline-block;background:#b8f3d4;color:#065f46;font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:800;letter-spacing:1.4px;padding:5px 10px;border-radius:999px">MVP</span>
-                  </td>
-                </tr>
-              </table>
+            <td style="padding:22px 24px 8px;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:700;color:#14201b">
+              MVP Finanças
             </td>
           </tr>
           <tr>
-            <td style="font-family:Arial,Helvetica,sans-serif;color:#14201b;padding:28px 24px 32px">
-              <h1 style="font-size:22px;line-height:1.3;margin:0 0 12px">${title}</h1>
+            <td style="font-family:Arial,Helvetica,sans-serif;color:#14201b;padding:8px 24px 28px">
+              <h1 style="font-size:20px;line-height:1.35;margin:0 0 12px;font-weight:700">${title}</h1>
               ${body}
             </td>
           </tr>
@@ -84,37 +98,42 @@ function layout(title: string, body: string) {
 }
 
 export async function sendVerificationEmail(to: string, name: string, token: string) {
-  const verifyUrl = `${await appUrl()}/verificar?token=${encodeURIComponent(token)}`;
+  const verifyUrl = `${await mailAppUrl()}/verificar?token=${encodeURIComponent(token)}`;
+  const safeName = escapeHtml(name);
   const html = layout(
-    "Confirme seu e-mail",
-    `<p style="line-height:1.5;color:#5b6b63">Olá, ${name}. Para ativar sua conta, confirme que este e-mail é seu.</p>
-    <p style="margin:28px 0">
-      <a href="${verifyUrl}" style="background:#0c8a5d;color:#fff;text-decoration:none;padding:12px 20px;border-radius:12px;display:inline-block;font-weight:600">Verificar minha conta</a>
+    `Olá, ${safeName}`,
+    `<p style="line-height:1.55;color:#3d4a44;margin:0 0 16px">Você criou uma conta no MVP Finanças. Para entrar, abra este link no seu navegador:</p>
+    <p style="margin:0 0 18px">
+      <a href="${verifyUrl}" style="background:#0c8a5d;color:#ffffff;text-decoration:none;padding:12px 18px;border-radius:10px;display:inline-block;font-weight:600">Abrir o MVP Finanças</a>
     </p>
-    <p style="font-size:13px;color:#5b6b63;line-height:1.5">O link vale por 24 horas. Se você não criou esta conta, ignore esta mensagem.</p>`,
+    <p style="font-size:13px;line-height:1.5;color:#5b6b63;margin:0 0 8px;word-break:break-all">${verifyUrl}</p>
+    <p style="font-size:13px;line-height:1.5;color:#5b6b63;margin:0">O link vale por 24 horas. Se você não pediu isso, pode ignorar.</p>`,
   );
-  await sendEmail(to, "Confirme sua conta no Financias", html, `Olá, ${name}. Confirme sua conta: ${verifyUrl}`);
+  await sendEmail(
+    to,
+    "Seu link do MVP Finanças",
+    html,
+    `Olá, ${name}.\n\nVocê criou uma conta no MVP Finanças. Abra este link para entrar:\n${verifyUrl}\n\nO link vale por 24 horas. Se você não pediu isso, ignore este e-mail.`,
+  );
   if (process.env.NODE_ENV !== "production") {
     console.info(`[mail] verificação enviada. Link: ${verifyUrl}`);
   }
 }
 
 export async function sendResetCodeEmail(to: string, name: string, code: string) {
-  const digits = code.split("").join("&nbsp;&nbsp;");
+  const digits = escapeHtml(code);
   const html = layout(
-    "Código para redefinir a senha",
-    `<p style="line-height:1.55;color:#5b6b63;margin:0 0 20px">Olá, ${name}. Use este código no Financias para criar uma senha nova:</p>
-    <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
-      <tr>
-        <td align="center" style="background:#f3fbf7;border:1px solid #cdeadc;border-radius:16px;padding:18px 12px 22px">
-          <div style="display:inline-block;background:#0c8a5d;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:800;letter-spacing:1.6px;padding:4px 10px;border-radius:999px;margin:0 0 12px">MVP</div>
-          <div style="font-family:Arial,Helvetica,sans-serif;font-size:32px;font-weight:800;letter-spacing:6px;color:#065f46;line-height:1">${digits}</div>
-        </td>
-      </tr>
-    </table>
-    <p style="font-size:13px;color:#5b6b63;line-height:1.5;margin:20px 0 0">O código vale por 15 minutos. Se você não pediu isso, ignore o e-mail.</p>`,
+    `Olá, ${escapeHtml(name)}`,
+    `<p style="line-height:1.55;color:#3d4a44;margin:0 0 16px">Seu código para criar uma senha nova no MVP Finanças é:</p>
+    <p style="font-family:Arial,Helvetica,sans-serif;font-size:28px;font-weight:700;letter-spacing:6px;color:#14201b;margin:0 0 16px">${digits}</p>
+    <p style="font-size:13px;line-height:1.5;color:#5b6b63;margin:0">Vale por 15 minutos. Se você não pediu isso, ignore este e-mail.</p>`,
   );
-  await sendEmail(to, "Seu código de recuperação — Financias", html, `Seu código Financias é ${code}. Vale por 15 minutos.`);
+  await sendEmail(
+    to,
+    "Código do MVP Finanças",
+    html,
+    `Olá, ${name}.\n\nSeu código para criar uma senha nova no MVP Finanças é ${code}.\nVale por 15 minutos.`,
+  );
 }
 
 export async function sendBillReminderEmail(
@@ -125,17 +144,23 @@ export async function sendBillReminderEmail(
   const items = bills
     .map(
       (b) =>
-        `<li style="margin:0 0 8px"><strong>${b.name}</strong> · ${b.amountLabel} · vence ${b.dueLabel}</li>`,
+        `<li style="margin:0 0 8px">${escapeHtml(b.name)} · ${escapeHtml(b.amountLabel)} · vence ${escapeHtml(b.dueLabel)}</li>`,
     )
     .join("");
+  const contasUrl = `${await mailAppUrl()}/contas`;
   const html = layout(
-    "Contas perto do vencimento",
-    `<p style="line-height:1.5;color:#5b6b63">Olá, ${name}. Estas contas vencem em até 3 dias:</p>
-    <ul style="padding-left:18px;color:#14201b">${items}</ul>
-    <p style="margin:28px 0">
-      <a href="${await appUrl()}/contas" style="background:#0c8a5d;color:#fff;text-decoration:none;padding:12px 20px;border-radius:12px;display:inline-block;font-weight:600">Abrir contas</a>
+    `Olá, ${escapeHtml(name)}`,
+    `<p style="line-height:1.55;color:#3d4a44;margin:0 0 16px">Estas contas do MVP Finanças vencem em até 3 dias:</p>
+    <ul style="padding-left:18px;color:#14201b;margin:0 0 18px">${items}</ul>
+    <p style="margin:0">
+      <a href="${contasUrl}" style="background:#0c8a5d;color:#ffffff;text-decoration:none;padding:12px 18px;border-radius:10px;display:inline-block;font-weight:600">Abrir minhas contas</a>
     </p>`,
   );
   const text = bills.map((b) => `${b.name} · ${b.amountLabel} · vence ${b.dueLabel}`).join("\n");
-  await sendEmail(to, "Contas perto do vencimento — Financias", html, `Olá, ${name}.\n\n${text}`);
+  await sendEmail(
+    to,
+    "Contas do MVP Finanças",
+    html,
+    `Olá, ${name}.\n\nEstas contas vencem em até 3 dias:\n${text}\n\n${contasUrl}`,
+  );
 }
