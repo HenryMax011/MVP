@@ -18,8 +18,12 @@ export const metadata: Metadata = {
   description:
     "Saldo, gastos, contas, cartões, grupos e um assistente de IA para as suas finanças.",
   icons: {
-    icon: "/favicon.svg",
-    apple: "/logo.png",
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon.png", type: "image/png", sizes: "512x512" },
+    ],
+    apple: "/apple-touch-icon.png",
+    shortcut: "/favicon.png",
   },
 };
 

@@ -15,7 +15,7 @@ Abra [http://localhost:3000](http://localhost:3000) e crie sua conta em **Criar 
 
 ## Assistente de IA
 
-Sem `ANTHROPIC_API_KEY`, o chat usa um analisador local sobre os seus dados. Com a chave no `.env`, passa a usar o Claude com function calling.
+O assistente em `/ia` usa só o **Gemini** (`GEMINI_API_KEY` do Google AI Studio). O modelo padrão é `gemini-2.5-flash`; troque com `GEMINI_MODEL`. A mesma chave vale no PC e na Vercel.
 
 ## Banco (Supabase)
 

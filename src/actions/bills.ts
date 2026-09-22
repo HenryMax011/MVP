@@ -215,6 +215,10 @@ export async function createDebt(formData: FormData) {
   const creditor = str(formData, "creditor");
   const totalAmount = parseBRLToCents(str(formData, "totalAmount"));
   if (!creditor || totalAmount <= 0) return { error: "Informe credor e valor" };
+  const installments = str(formData, "installments") ? Number(str(formData, "installments")) : null;
+  const monthlyAmount =
+    parseBRLToCents(str(formData, "monthlyAmount")) ||
+    (installments && installments > 0 ? Math.round(totalAmount / installments) : 0);
 
   await prisma.debt.create({
     data: {
@@ -222,10 +226,11 @@ export async function createDebt(formData: FormData) {
       creditor,
       totalAmount,
       paidAmount: parseBRLToCents(str(formData, "paidAmount")),
+      monthlyAmount: monthlyAmount || null,
       interestRate: str(formData, "interestRate") ? Number(str(formData, "interestRate")) : null,
-      installments: str(formData, "installments") ? Number(str(formData, "installments")) : null,
-      startDate: new Date(str(formData, "startDate") || new Date().toISOString()),
-      nextDueDate: str(formData, "nextDueDate") ? new Date(str(formData, "nextDueDate")) : null,
+      installments,
+      startDate: parseLocalDate(str(formData, "startDate")) ?? new Date(),
+      nextDueDate: parseLocalDate(str(formData, "nextDueDate")),
       notes: str(formData, "notes") || null,
     },
   });
@@ -251,7 +256,11 @@ export async function payDebtInstallment(id: string, amountRaw: string) {
 
   await prisma.debt.update({
     where: { id },
-    data: { paidAmount, nextDueDate },
+    data: {
+      paidAmount,
+      nextDueDate,
+      monthlyAmount: paidAmount >= debt.totalAmount ? debt.monthlyAmount : amount,
+    },
   });
   revalidatePath("/dividas");
   return { success: true };

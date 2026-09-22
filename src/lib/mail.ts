@@ -37,13 +37,18 @@ async function sendEmail(to: string, subject: string, html: string, text: string
     auth: { user, pass },
   });
 
-  await transporter.sendMail({
-    from: process.env.MAIL_FROM?.trim() || `Financias <${user}>`,
-    to,
-    subject,
-    html,
-    text,
-  });
+  try {
+    await transporter.sendMail({
+      from: process.env.MAIL_FROM?.trim() || `Financias <${user}>`,
+      to,
+      subject,
+      html,
+      text,
+    });
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : "erro desconhecido";
+    throw new Error(`Falha ao enviar e-mail: ${detail}`);
+  }
 }
 
 function layout(title: string, body: string) {
@@ -89,6 +94,9 @@ export async function sendVerificationEmail(to: string, name: string, token: str
     <p style="font-size:13px;color:#5b6b63;line-height:1.5">O link vale por 24 horas. Se você não criou esta conta, ignore esta mensagem.</p>`,
   );
   await sendEmail(to, "Confirme sua conta no Financias", html, `Olá, ${name}. Confirme sua conta: ${verifyUrl}`);
+  if (process.env.NODE_ENV !== "production") {
+    console.info(`[mail] verificação enviada. Link: ${verifyUrl}`);
+  }
 }
 
 export async function sendResetCodeEmail(to: string, name: string, code: string) {

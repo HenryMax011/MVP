@@ -166,6 +166,10 @@ export async function resendVerificationAction(
     await issueVerifyToken(user.id, user.email, user.name);
   } catch (error) {
     console.error(error);
+    const message = error instanceof Error ? error.message : "";
+    if (message.includes("SMTP") || message.includes("e-mail")) {
+      return { error: message };
+    }
     return { error: "Não foi possível reenviar o e-mail agora." };
   }
   return { sent: true };

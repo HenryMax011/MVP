@@ -149,9 +149,10 @@ model Debt {
   user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   creditor     String
   totalAmount  Int
-  paidAmount   Int       @default(0)
-  interestRate Float?
-  installments Int?
+  paidAmount     Int       @default(0)
+  monthlyAmount  Int?
+  interestRate   Float?
+  installments   Int?
   startDate    DateTime
   nextDueDate  DateTime?
   notes        String?

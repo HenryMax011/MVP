@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireSession } from "@/lib/auth";
-import { answerLocally, answerWithClaude } from "@/lib/ai";
+import { answerAssistant } from "@/lib/ai";
+import { pruneAssistantMessages } from "@/lib/assistant";
 import { prisma } from "@/lib/db";
 
 export async function POST(req: Request) {
@@ -15,6 +16,8 @@ export async function POST(req: Request) {
   if (!message) {
     return NextResponse.json({ error: "Mensagem vazia" }, { status: 400 });
   }
+
+  await pruneAssistantMessages(session.userId);
 
   let conversation = await prisma.conversation.findFirst({
     where: { userId: session.userId },
@@ -32,15 +35,7 @@ export async function POST(req: Request) {
     content: m.content,
   }));
 
-  let reply = "";
-  const hasKey = Boolean(process.env.ANTHROPIC_API_KEY);
-  try {
-    reply = hasKey
-      ? await answerWithClaude(session.userId, history, message)
-      : await answerLocally(session.userId, message);
-  } catch {
-    reply = await answerLocally(session.userId, message);
-  }
+  const { reply, provider } = await answerAssistant(session.userId, history, message);
 
   await prisma.message.createMany({
     data: [
@@ -49,5 +44,5 @@ export async function POST(req: Request) {
     ],
   });
 
-  return NextResponse.json({ reply, provider: hasKey ? "claude" : "local" });
+  return NextResponse.json({ reply, provider });
 }

@@ -5,6 +5,8 @@ import { Sparkles, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/field";
 
+const MESSAGE_TTL_MS = 24 * 60 * 60 * 1000;
+
 const suggestions = [
   "Quanto gastei com mercado esse mês?",
   "Posso gastar R$200 esse fim de semana?",
@@ -12,13 +14,23 @@ const suggestions = [
   "Onde posso cortar gastos?",
 ];
 
-type Msg = { role: "user" | "assistant"; content: string };
+type Msg = { role: "user" | "assistant"; content: string; createdAt: string };
+
+function stillVisible(message: Msg) {
+  return Date.now() - new Date(message.createdAt).getTime() < MESSAGE_TTL_MS;
+}
 
 export function Chat({ initial }: { initial: Msg[] }) {
-  const [messages, setMessages] = useState<Msg[]>(initial);
+  const [messages, setMessages] = useState<Msg[]>(() => initial.filter(stillVisible));
   const [text, setText] = useState("");
   const [pending, setPending] = useState(false);
   const bottom = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const tick = () => setMessages((current) => current.filter(stillVisible));
+    const id = window.setInterval(tick, 60_000);
+    return () => window.clearInterval(id);
+  }, []);
 
   useEffect(() => {
     bottom.current?.scrollIntoView({ behavior: "smooth" });
@@ -28,7 +40,7 @@ export function Chat({ initial }: { initial: Msg[] }) {
     const message = content.trim();
     if (!message || pending) return;
     setText("");
-    setMessages((m) => [...m, { role: "user", content: message }]);
+    setMessages((m) => [...m.filter(stillVisible), { role: "user", content: message, createdAt: new Date().toISOString() }]);
     setPending(true);
     try {
       const res = await fetch("/api/ia/chat", {
@@ -38,11 +50,18 @@ export function Chat({ initial }: { initial: Msg[] }) {
       });
       const data = (await res.json()) as { reply?: string; error?: string };
       setMessages((m) => [
-        ...m,
-        { role: "assistant", content: data.reply ?? data.error ?? "Não foi possível responder." },
+        ...m.filter(stillVisible),
+        {
+          role: "assistant",
+          content: data.reply ?? data.error ?? "Não foi possível responder.",
+          createdAt: new Date().toISOString(),
+        },
       ]);
     } catch {
-      setMessages((m) => [...m, { role: "assistant", content: "Falha de conexão. Tente de novo." }]);
+      setMessages((m) => [
+        ...m.filter(stillVisible),
+        { role: "assistant", content: "Falha de conexão. Tente de novo.", createdAt: new Date().toISOString() },
+      ]);
     } finally {
       setPending(false);
     }
