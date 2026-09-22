@@ -1,5 +1,8 @@
+import { Resend } from "resend";
 import nodemailer from "nodemailer";
 import { mailAppUrl } from "@/lib/app-url";
+
+const RESEND_FROM = "MVP Finanças <onboarding@resend.dev>";
 
 function escapeHtml(value: string) {
   return value.replace(/[&<>"']/g, (char) => {
@@ -21,29 +24,28 @@ function fromAddress(smtpUser: string) {
   return { name: "MVP Finanças", address: smtpUser };
 }
 
-async function sendEmail(to: string, subject: string, html: string, text: string) {
-  if (process.env.RESEND_API_KEY) {
-    const response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: process.env.MAIL_FROM || "MVP Finanças <noreply@resend.dev>",
-        to,
-        subject,
-        html,
-        text,
-        reply_to: process.env.SMTP_USER || undefined,
-      }),
-    });
-    if (!response.ok) {
-      const body = await response.text();
-      throw new Error(`Falha ao enviar e-mail: ${body}`);
-    }
-    return;
+async function sendWithResend(to: string, subject: string, html: string, text: string) {
+  const apiKey = process.env.RESEND_API_KEY?.trim();
+  if (!apiKey) return false;
+  const resend = new Resend(apiKey);
+  const from = process.env.MAIL_FROM?.includes("@resend.dev")
+    ? process.env.MAIL_FROM.trim()
+    : RESEND_FROM;
+  const { error } = await resend.emails.send({
+    from,
+    to,
+    subject,
+    html,
+    text,
+  });
+  if (error) {
+    throw new Error(`Falha ao enviar e-mail: ${error.message}`);
   }
+  return true;
+}
+
+async function sendEmail(to: string, subject: string, html: string, text: string) {
+  if (await sendWithResend(to, subject, html, text)) return;
 
   const user = process.env.SMTP_USER?.trim();
   const pass = process.env.SMTP_PASS?.replace(/\s/g, "");
