@@ -40,7 +40,9 @@ export async function proxy(req: NextRequest) {
     pathname === "/cadastro" ||
     pathname.startsWith("/cadastro/") ||
     pathname === "/recuperar" ||
-    pathname.startsWith("/recuperar/");
+    pathname.startsWith("/recuperar/") ||
+    pathname === "/verificar" ||
+    pathname.startsWith("/verificar/");
 
   if (isProtected && !loggedIn) {
     const url = new URL("/login", req.url);
@@ -91,5 +93,7 @@ export const config = {
     "/cadastro/:path*",
     "/recuperar",
     "/recuperar/:path*",
+    "/verificar",
+    "/verificar/:path*",
   ],
 };

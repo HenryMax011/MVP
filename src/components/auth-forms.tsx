@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useRef } from "react";
 import Link from "next/link";
 import {
   completeResetAction,
@@ -91,8 +91,21 @@ export function ResendVerificationButton() {
 
 export function ConfirmEmailForm({ token }: { token: string }) {
   const [state, action, pending] = useActionState(confirmEmailAction, null as AuthState);
+  const formRef = useRef<HTMLFormElement>(null);
+  const submitted = useRef(false);
+
+  useEffect(() => {
+    if (!token || submitted.current) return;
+    submitted.current = true;
+    formRef.current?.requestSubmit();
+  }, [token]);
+
+  if (!token) {
+    return <p className="text-sm text-rose-600">Este link está incompleto. Solicite um novo e-mail de verificação.</p>;
+  }
+
   return (
-    <form action={action} className="grid gap-3">
+    <form ref={formRef} action={action} className="grid gap-3">
       <input type="hidden" name="token" value={token} />
       {state?.error && <p className="text-sm text-rose-600">{state.error}</p>}
       <Button type="submit" disabled={pending} className="w-full">

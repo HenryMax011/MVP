@@ -1,5 +1,5 @@
 import nodemailer from "nodemailer";
-import { appUrl } from "@/lib/auth-cookies";
+import { appUrl } from "@/lib/app-url";
 
 async function sendEmail(to: string, subject: string, html: string, text: string) {
   if (process.env.RESEND_API_KEY) {
@@ -79,7 +79,7 @@ function layout(title: string, body: string) {
 }
 
 export async function sendVerificationEmail(to: string, name: string, token: string) {
-  const verifyUrl = `${appUrl()}/verificar/${token}`;
+  const verifyUrl = `${await appUrl()}/verificar?token=${encodeURIComponent(token)}`;
   const html = layout(
     "Confirme seu e-mail",
     `<p style="line-height:1.5;color:#5b6b63">Olá, ${name}. Para ativar sua conta, confirme que este e-mail é seu.</p>
@@ -125,7 +125,7 @@ export async function sendBillReminderEmail(
     `<p style="line-height:1.5;color:#5b6b63">Olá, ${name}. Estas contas vencem em até 3 dias:</p>
     <ul style="padding-left:18px;color:#14201b">${items}</ul>
     <p style="margin:28px 0">
-      <a href="${appUrl()}/contas" style="background:#0c8a5d;color:#fff;text-decoration:none;padding:12px 20px;border-radius:12px;display:inline-block;font-weight:600">Abrir contas</a>
+      <a href="${await appUrl()}/contas" style="background:#0c8a5d;color:#fff;text-decoration:none;padding:12px 20px;border-radius:12px;display:inline-block;font-weight:600">Abrir contas</a>
     </p>`,
   );
   const text = bills.map((b) => `${b.name} · ${b.amountLabel} · vence ${b.dueLabel}`).join("\n");

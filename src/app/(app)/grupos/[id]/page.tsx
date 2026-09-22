@@ -9,7 +9,7 @@ import { ConfirmButton } from "@/components/confirm-button";
 import { deleteSharedExpense } from "@/actions/groups";
 import { formatDate } from "@/lib/format";
 import { CopyInvite } from "@/components/copy-invite";
-import { appUrl } from "@/lib/auth-cookies";
+import { appUrl } from "@/lib/app-url";
 
 export default async function GrupoPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await requireSession();
@@ -35,7 +35,7 @@ export default async function GrupoPage({ params }: { params: Promise<{ id: stri
       <div>
         <p className="text-sm text-muted">Convite do grupo</p>
         <h1 className="text-2xl font-semibold">{group.name}</h1>
-        <CopyInvite code={group.inviteCode} url={`${appUrl()}/grupos/entrar/${group.inviteCode}`} />
+        <CopyInvite code={group.inviteCode} url={`${await appUrl()}/grupos/entrar/${group.inviteCode}`} />
       </div>
 
       <div className="grid gap-3 lg:grid-cols-3">

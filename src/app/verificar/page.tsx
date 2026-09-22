@@ -1,15 +1,14 @@
 import { AuthCard, AuthFooterLink } from "@/components/auth-card";
 import { ConfirmEmailForm } from "@/components/auth-forms";
 
-export const dynamic = "force-dynamic";
-export const dynamicParams = true;
-
-export default async function VerificarTokenPage({
-  params,
+export default async function VerificarPage({
+  searchParams,
 }: {
-  params: Promise<{ token: string }>;
+  searchParams: Promise<{ token?: string | string[] }>;
 }) {
-  const { token } = await params;
+  const params = await searchParams;
+  const raw = params.token;
+  const token = (Array.isArray(raw) ? raw[0] : raw)?.trim() ?? "";
 
   return (
     <AuthCard

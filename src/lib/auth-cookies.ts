@@ -4,10 +4,6 @@ export const RESET_TICKET_COOKIE = "financias_reset_ticket";
 export const NEXT_PATH_COOKIE = "financias_next";
 export const FLASH_COOKIE = "financias_flash";
 
-export function appUrl() {
-  return process.env.APP_URL?.replace(/\/$/, "") || "http://localhost:3000";
-}
-
 export function maskEmail(email: string) {
   const [user, domain] = email.split("@");
   if (!user || !domain) return email;
